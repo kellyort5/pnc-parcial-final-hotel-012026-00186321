@@ -11,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.uca.pncparcialfinalhotel.entity.Room;
+import com.uca.pncparcialfinalhotel.enums.RoomType;
+import com.uca.pncparcialfinalhotel.repository.RoomRepository;
 
 @Configuration
 @RequiredArgsConstructor
@@ -28,6 +31,9 @@ public class DataInitializer implements CommandLineRunner {
         Role guestRole = createRoleIfNotExists(RoleName.HUESPED);
 
         Hotel hotel = createHotelIfNotExists();
+        createRoomIfNotExists("101", RoomType.INDIVIDUAL, 50.0, hotel);
+        createRoomIfNotExists("102", RoomType.DOBLE, 75.0, hotel);
+        createRoomIfNotExists("201", RoomType.SUITE, 120.0, hotel);
 
         createUserIfNotExists(
                 "admin",
@@ -99,6 +105,25 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
 
             userRepository.save(user);
+        }
+    }
+    private final RoomRepository roomRepository;
+
+    private void createRoomIfNotExists(String roomNumber, RoomType type, Double price, Hotel hotel) {
+        boolean exists = roomRepository.findByHotelId(hotel.getId())
+                .stream()
+                .anyMatch(room -> room.getRoomNumber().equals(roomNumber));
+
+        if (!exists) {
+            Room room = Room.builder()
+                    .roomNumber(roomNumber)
+                    .type(type)
+                    .price(price)
+                    .available(true)
+                    .hotel(hotel)
+                    .build();
+
+            roomRepository.save(room);
         }
     }
 }
